@@ -1,2 +1,2 @@
-# FaceMaskRecognition (G20)
-Project for IIC3724 - Pattern Recognition.
+# Python Experiments
+Experiments in a Python environment.
