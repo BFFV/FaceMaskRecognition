@@ -1,0 +1,13 @@
+*.m
+*.fig
+*.mexw64
+*.bmp
+*.h
+*.mat
+*.JPG
+*.png
+*.C
+!Experimento_entrega1.m
+*.txt
+arrows/
+sfs_datos/
