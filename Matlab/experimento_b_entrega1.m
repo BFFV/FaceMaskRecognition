@@ -6,7 +6,7 @@ caract_valid = [];
 pmax = 0;
 
 archivo = 'Fotos/FaceMask166/';
-f1.imgmax    = 96;
+f1.imgmax    = 240;
 
 % Definition of images para clasificador
 f1.path      = archivo;

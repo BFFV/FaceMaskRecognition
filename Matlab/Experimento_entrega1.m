@@ -127,51 +127,51 @@ caract_test_2 = caract_test_1.*(ones(N,1)*a) + ones(N,1)*b;
 
 % Selección de características
 
-%Se parte escogiendo las primeras 20 características
-[caract_train_3,lambda,A,Xs,mx] = Bft_pca(caract_train_2,30);
-
-N = size(caract_valid_1,1);
-caract_valid_3 = (caract_valid_2 - ones(N,1)*mx)*A(:,1:30);
-%test
-N = size(caract_test_1,1);
-caract_test_3 = (caract_test_2 - ones(N,1)*mx)*A(:,1:30);
-%Seguimos con SFS y escogemos las 10 primeras características
-
-op.m = 10;                     % 10 escogidas
-op.b.name = 'fisher';          % SFS with Fisher
-op.show = 0;
-s = Bfs_sfs(caract_train_3,d1,op);       % index of selected features
-
-caract_train_4 = caract_train_3(:,s);    % selected features
-
-%Datos de valid
-caract_valid_4 = caract_valid_3(:,s);    % selected features
-%datos test
-caract_test_4 = caract_test_3(:,s);    % selected features
+% %Se parte escogiendo las primeras 20 características
+% [caract_train_3,lambda,A,Xs,mx] = Bft_pca(caract_train_2,30);
+% 
+% N = size(caract_valid_1,1);
+% caract_valid_3 = (caract_valid_2 - ones(N,1)*mx)*A(:,1:30);
+% %test
+% N = size(caract_test_1,1);
+% caract_test_3 = (caract_test_2 - ones(N,1)*mx)*A(:,1:30);
+% %Seguimos con SFS y escogemos las 10 primeras características
+% 
+% op.m = 10;                     % 10 escogidas
+% op.b.name = 'fisher';          % SFS with Fisher
+% op.show = 0;
+% s = Bfs_sfs(caract_train_3,d1,op);       % index of selected features
+% 
+% caract_train_4 = caract_train_3(:,s);    % selected features
+% 
+% %Datos de valid
+% caract_valid_4 = caract_valid_3(:,s);    % selected features
+% %datos test
+% caract_test_4 = caract_test_3(:,s);    % selected features
 for p = 1:5
 
     if p == 1
         nombre = 'KNN';
         opcl.k = 6;
-        ds = Bcl_knn(caract_train_4,d1 ,caract_valid_4, opcl);   
+        ds = Bcl_knn(caract_train_2,d1 ,caract_valid_2, opcl);   
 
     elseif p == 2
         nombre = 'SVM';
         op.kernel = ['-t ' 1]; %se utiliza una transformacion polinomial
-        ds = Bcl_libsvm(caract_train_4,d1,caract_valid_4,op);   % SVM  
+        ds = Bcl_libsvm(caract_train_2,d1,caract_valid_2,op);   % SVM  
     elseif p == 3
         nombre = 'KNN';
         opcl.k = 5;
-        ds = Bcl_knn(caract_train_4,d1 ,caract_valid_4, opcl); 
+        ds = Bcl_knn(caract_train_2,d1 ,caract_valid_2, opcl); 
         
     elseif p == 4
         nombre = 'KNN';
         opcl.k = 4;
-        ds = Bcl_knn(caract_train_4,d1 ,caract_valid_4, opcl); 
+        ds = Bcl_knn(caract_train_2,d1 ,caract_valid_2, opcl); 
     elseif p == 5
         nombre = 'KNN';
         opcl.k = 3;
-        ds = Bcl_knn(caract_train_4,d1 ,caract_valid_4, opcl);         
+        ds = Bcl_knn(caract_train_2,d1 ,caract_valid_2, opcl);         
     elseif p == 6
         nombre = 'QDA';
         opd.p = [];
