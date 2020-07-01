@@ -8,6 +8,7 @@
 *.png
 *.C
 !Experimento_entrega1.m
+!experimento_2_entrega1.m
 *.txt
 arrows/
 sfs_datos/

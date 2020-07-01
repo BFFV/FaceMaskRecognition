@@ -1,4 +1,3 @@
-
 %% 1] Extracción de caractarísticas.
 clear
 caract_train = [];
@@ -24,62 +23,62 @@ caract_test  = [];
 caract_valid = [];        
 % Definition of LBP featuresf
 %se hace invariante a la rotacion
-opLBP.vdiv        = 3;           % 3 vertical divition
-opLBP.hdiv        = 3;           % 3 horizontal   divition
+opLBP.vdiv        = 6;           % 3 vertical divition
+opLBP.hdiv        = 8;           % 3 horizontal   divition
 opLBP.samples     = 8;           % number of neighbor samples
-opLBP.mappingtype = 'ri';        %uniforme con 59 elementos
+opLBP.mappingtype = 'u2';        %uniforme con 59 elementos
 %opLBP.weight      = 0;
 opLBP.type        = 2;           % intensity feature
 
-% Definition of Haralick Features (28 características)
-opHar.dharalick   = 3;           % distances 3 pixels
-opHar.type        = 2;           % intensity feature
-
-% Definition of Gabor Features
-opGab.Lgabor      = 8;           % number of rotations
-opGab.Sgabor      = 8;           % number of dilations (scale)
-opGab.fhgabor     = 2;           % highest frequency of interest
-opGab.flgabor     = 0.1;         % lowest frequency of interest
-opGab.Mgabor      = 21;          % mask size
-opGab.show        = 0;
-opGab.type        = 2;           % intensity feature
-
-%Parámetros para HOG
-
-options.nj    = 10;             % 10 x 10
-options.ni    = 10;             % histograms
-options.B     = 9;              % 9 bins 
-options.show  = 0;              % show results
-
-
+% % Definition of Haralick Features (28 características)
+% opHar.dharalick   = 3;           % distances 3 pixels
+% opHar.type        = 2;           % intensity feature
+% 
+% % Definition of Gabor Features
+% opGab.Lgabor      = 8;           % number of rotations
+% opGab.Sgabor      = 8;           % number of dilations (scale)
+% opGab.fhgabor     = 2;           % highest frequency of interest
+% opGab.flgabor     = 0.1;         % lowest frequency of interest
+% opGab.Mgabor      = 21;          % mask size
+% opGab.show        = 0;
+% opGab.type        = 2;           % intensity feature
+% 
+% %Parámetros para HOG
+% 
+% options.nj    = 10;             % 10 x 10
+% options.ni    = 10;             % histograms
+% options.B     = 9;              % 9 bins 
+% options.show  = 0;              % show results
+% 
+% 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % 2. Feature Extraction
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 bf(1).name = 'lbp';      bf(1).options = opLBP;
-bf(2).name = 'haralick'; bf(2).options = opHar;
-bf(3).name = 'gabor';    bf(3).options = opGab;
+% bf(2).name = 'haralick'; bf(2).options = opHar;
+% bf(3).name = 'gabor';    bf(3).options = opGab;
 opfx.b = bf;
 opfx.colstr = 'g';
 
 % All features from all images are extracted:
 [f,fn,S] = Bfx_files_2(f1,opfx); % f: feature matrix, fn: feature names, S: image file names
-
-%Faltan las caractaristicas de HOG
-caracteristicas_HOG = [];
-
-for z = 1:f1.imgmax
-    I = Bio_loadimg_2(f1,z);
-    %caracteristicas de HOG
-    X = Bfx_hog(I,options);
-
-    caracteristicas_HOG = [caracteristicas_HOG ; X ];
-
-end        
-
-%Unir HOG con LBP
-f = [f caracteristicas_HOG];
+% 
+% %Faltan las caractaristicas de HOG
+% caracteristicas_HOG = [];
+% 
+% for z = 1:f1.imgmax
+%     I = Bio_loadimg_2(f1,z);
+%     %caracteristicas de HOG
+%     X = Bfx_hog(I,options);
+% 
+%     caracteristicas_HOG = [caracteristicas_HOG ; X ];
+% 
+% end        
+% 
+% %Unir HOG con LBP
+% f = [f caracteristicas_HOG];
 
 for k = 1:6
     d = 0;
@@ -127,56 +126,70 @@ caract_test_2 = caract_test_1.*(ones(N,1)*a) + ones(N,1)*b;
 
 % Selección de características
 
-%Se parte escogiendo las primeras 20 características
-[caract_train_3,lambda,A,Xs,mx] = Bft_pca(caract_train_2,30);
+% %Partimos con SFS y escogemos las 50 primeras características
+% 
+% op.m = 20;                     % 50 escogidas
+% op.b.name = 'fisher';          % SFS with Fisher
+% op.show = 0;
+% s = Bfs_sfs(caract_train_2,d1,op);       % index of selected features
+% 
+% caract_train_6 = caract_train_2(:,s);    % selected features
+% zzz = 3;
+% %Datos de testing
+% caract_test_6 = caract_test_2(:,s);    % selected features
+% %Datos de validacion
+% caract_valid_6 = caract_valid_2(:,s);    % selected features
+% 
+% 
+% % Luego seguimos con PCA y se escogen las 10 mejores
+% 
+% [caract_train_4,lambda,A,Xs,mx] = Bft_pca(caract_train_3,100);
+% 
+% N = size(caract_test_3,1);
+% caract_test_4 = (caract_test_3 - ones(N,1)*mx)*A(:,1:100);
+% 
+% N = size(caract_valid_3,1);
+% caract_valid_4 = (caract_valid_3 - ones(N,1)*mx)*A(:,1:100);
+% 
+% 
+% %Por último, se juntan las caraterísticas seleccionadas por PCA y SFS y se pasan por SFS  nuevamente
+% 
+% caract_train_5 = [caract_train_3 caract_train_4];
+% 
+% op.m = 30;                     % 15 escogidas
+% op.b.name = 'fisher';          % SFS with Fisher
+% op.show = 0;
+% s = Bfs_sfs(caract_train_5,d1,op);       % index of selected features
+% 
+% caract_train_6 = caract_train_5(:,s);    % selected features
 
-N = size(caract_valid_1,1);
-caract_valid_3 = (caract_valid_2 - ones(N,1)*mx)*A(:,1:30);
-%test
-N = size(caract_test_1,1);
-caract_test_3 = (caract_test_2 - ones(N,1)*mx)*A(:,1:30);
-%Seguimos con SFS y escogemos las 10 primeras características
+% %Datos de testing
+% caract_test_5 = [caract_test_3 caract_test_4];
+% 
+% caract_test_6 = caract_test_5(:,s);    % selected features
+% 
+% %Datos valid
+% caract_valid_5 = [caract_valid_3 caract_valid_4];
+% 
+% caract_valid_6 = caract_valid_5(:,s);    % selected features
 
-op.m = 10;                     % 10 escogidas
-op.b.name = 'fisher';          % SFS with Fisher
-op.show = 0;
-s = Bfs_sfs(caract_train_3,d1,op);       % index of selected features
-
-caract_train_4 = caract_train_3(:,s);    % selected features
-
-%Datos de valid
-caract_valid_4 = caract_valid_3(:,s);    % selected features
-%datos test
-caract_test_4 = caract_test_3(:,s);    % selected features
-for p = 1:5
+for p = 1:2
 
     if p == 1
         nombre = 'KNN';
         opcl.k = 6;
-        ds = Bcl_knn(caract_train_4,d1 ,caract_valid_4, opcl);   
+        ds = Bcl_knn(caract_train_2,d1 ,caract_valid_2, opcl);   
 
     elseif p == 2
         nombre = 'SVM';
         op.kernel = ['-t ' 1]; %se utiliza una transformacion polinomial
-        ds = Bcl_libsvm(caract_train_4,d1,caract_valid_4,op);   % SVM  
+        ds = Bcl_libsvm(caract_train_2,d1,caract_valid_2,op);   % SVM  
+
     elseif p == 3
-        nombre = 'KNN';
-        opcl.k = 5;
-        ds = Bcl_knn(caract_train_4,d1 ,caract_valid_4, opcl); 
-        
-    elseif p == 4
-        nombre = 'KNN';
-        opcl.k = 4;
-        ds = Bcl_knn(caract_train_4,d1 ,caract_valid_4, opcl); 
-    elseif p == 5
-        nombre = 'KNN';
-        opcl.k = 3;
-        ds = Bcl_knn(caract_train_4,d1 ,caract_valid_4, opcl);         
-    elseif p == 6
         nombre = 'QDA';
         opd.p = [];
-        opd = Bcl_qda(caract_train_4,d1,opd);
-        ds = Bcl_qda(caract_valid_4,opd);                    
+        opd = Bcl_qda(caract_train_6,d1,opd);
+        ds = Bcl_qda(caract_valid_6,opd);                    
     end
 
     per = Bev_performance(ds,dv);
@@ -247,7 +260,7 @@ end
 
 nombre = 'SVM';
 op.kernel = ['-t ' 1]; %se utiliza una transformacion polinomial
-ds = Bcl_libsvm(caract_train_4,d1,caract_test_4,op);   % SVM  
+ds = Bcl_libsvm(caract_train_2,d1,caract_test_2,op);   % SVM  
 
 
 per = Bev_performance(ds,dt);
@@ -255,5 +268,3 @@ fprintf('Performance claisificador %s, hdiv: %u , vdiv: %u es = %f',nombre, j, i
 
 %Matriz de confusion
 [T,p] = Bev_confusion(dt,ds);
-
-%}

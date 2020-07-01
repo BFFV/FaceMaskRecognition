@@ -1,6 +1,4 @@
-
 %% 1] Extracción de caractarísticas.
-clear
 caract_train = [];
 caract_test = [];
 caract_valid = [];
@@ -127,56 +125,70 @@ caract_test_2 = caract_test_1.*(ones(N,1)*a) + ones(N,1)*b;
 
 % Selección de características
 
-%Se parte escogiendo las primeras 20 características
-[caract_train_3,lambda,A,Xs,mx] = Bft_pca(caract_train_2,30);
+%Partimos con SFS y escogemos las 50 primeras características
 
-N = size(caract_valid_1,1);
-caract_valid_3 = (caract_valid_2 - ones(N,1)*mx)*A(:,1:30);
-%test
-N = size(caract_test_1,1);
-caract_test_3 = (caract_test_2 - ones(N,1)*mx)*A(:,1:30);
-%Seguimos con SFS y escogemos las 10 primeras características
-
-op.m = 10;                     % 10 escogidas
+op.m = 300;                     % 50 escogidas
 op.b.name = 'fisher';          % SFS with Fisher
 op.show = 0;
-s = Bfs_sfs(caract_train_3,d1,op);       % index of selected features
+s = Bfs_sfs(caract_train_2,d1,op);       % index of selected features
 
-caract_train_4 = caract_train_3(:,s);    % selected features
+caract_train_3 = caract_train_2(:,s);    % selected features
+zzz = 3;
+%Datos de testing
+caract_test_3 = caract_test_2(:,s);    % selected features
+%Datos de validacion
+caract_valid_3 = caract_valid_2(:,s);    % selected features
 
-%Datos de valid
-caract_valid_4 = caract_valid_3(:,s);    % selected features
-%datos test
-caract_test_4 = caract_test_3(:,s);    % selected features
-for p = 1:5
+
+% Luego seguimos con PCA y se escogen las 25 mejores
+
+[caract_train_4,lambda,A,Xs,mx] = Bft_pca(caract_train_3,100);
+
+N = size(caract_test_3,1);
+caract_test_4 = (caract_test_3 - ones(N,1)*mx)*A(:,1:100);
+
+N = size(caract_valid_3,1);
+caract_valid_4 = (caract_valid_3 - ones(N,1)*mx)*A(:,1:100);
+
+
+%Por último, se juntan las caraterísticas seleccionadas por PCA y SFS y se pasan por SFS  nuevamente
+
+caract_train_5 = [caract_train_3 caract_train_4];
+
+op.m = 30;                     % 15 escogidas
+op.b.name = 'fisher';          % SFS with Fisher
+op.show = 0;
+s = Bfs_sfs(caract_train_5,d1,op);       % index of selected features
+
+caract_train_6 = caract_train_5(:,s);    % selected features
+
+%Datos de testing
+caract_test_5 = [caract_test_3 caract_test_4];
+
+caract_test_6 = caract_test_5(:,s);    % selected features
+
+%Datos valid
+caract_valid_5 = [caract_valid_3 caract_valid_4];
+
+caract_valid_6 = caract_valid_5(:,s);    % selected features
+
+for p = 1:2
 
     if p == 1
         nombre = 'KNN';
         opcl.k = 6;
-        ds = Bcl_knn(caract_train_4,d1 ,caract_valid_4, opcl);   
+        ds = Bcl_knn(caract_train_6,d1 ,caract_valid_6, opcl);   
 
     elseif p == 2
         nombre = 'SVM';
         op.kernel = ['-t ' 1]; %se utiliza una transformacion polinomial
-        ds = Bcl_libsvm(caract_train_4,d1,caract_valid_4,op);   % SVM  
+        ds = Bcl_libsvm(caract_train_6,d1,caract_valid_6,op);   % SVM  
+
     elseif p == 3
-        nombre = 'KNN';
-        opcl.k = 5;
-        ds = Bcl_knn(caract_train_4,d1 ,caract_valid_4, opcl); 
-        
-    elseif p == 4
-        nombre = 'KNN';
-        opcl.k = 4;
-        ds = Bcl_knn(caract_train_4,d1 ,caract_valid_4, opcl); 
-    elseif p == 5
-        nombre = 'KNN';
-        opcl.k = 3;
-        ds = Bcl_knn(caract_train_4,d1 ,caract_valid_4, opcl);         
-    elseif p == 6
         nombre = 'QDA';
         opd.p = [];
-        opd = Bcl_qda(caract_train_4,d1,opd);
-        ds = Bcl_qda(caract_valid_4,opd);                    
+        opd = Bcl_qda(caract_train_6,d1,opd);
+        ds = Bcl_qda(caract_valid_6,opd);                    
     end
 
     per = Bev_performance(ds,dv);
@@ -255,5 +267,3 @@ fprintf('Performance claisificador %s, hdiv: %u , vdiv: %u es = %f',nombre, j, i
 
 %Matriz de confusion
 [T,p] = Bev_confusion(dt,ds);
-
-%}
