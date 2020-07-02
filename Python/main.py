@@ -8,7 +8,7 @@ from utils import accuracy
 
 # Train or load from data file
 
-load = True
+load = False
 train_data = 'train_data.npy'  # Training Set Data
 train_classes = 'train_classes.npy'  # Training Set Classes
 validation_data = 'validation_data.npy'  # Validation Set Data
@@ -19,7 +19,7 @@ img_set = 'A'
 set_dict = {'A': 17, 'B': 41, 'C': 101, 'D': 167}
 
 # Features to extract (gabor, haralick, hog, lbp)
-selected_features = ['lbp', 'gabor']
+selected_features = ['lbp']
 
 # Selection/Transformation steps (sfs, mutual_info, pca)
 # sfs => n_features: int, method: ('fisher', 'sp100')
@@ -27,15 +27,12 @@ selected_features = ['lbp', 'gabor']
 # pca => n_components: int, energy: float in [0,1]
 
 strategy_1 = [  # SFS + MI
-    ['mutual_info', {'n_features': 100, 'n_neighbors': 3}],
-    ['sfs', {'n_features': 24, 'method': 'fisher'}]]
+    ['pca', {'n_components': 2500}],
+    ['mutual_info', {'n_features': 800, 'n_neighbors': 3}]]
 strategy_2 = [  # SFS + PCA
-    ['sfs', {'n_features': 50, 'method': 'fisher'}],
-    ['pca', {'n_components': 30}],
-    ['sfs', {'n_features': 24, 'method': 'fisher'}]]
+    ['pca', {'n_components': 2500}]]
 strategy_3 = [  # Best Combination
-    ['sfs', {'n_features': 24, 'method': 'fisher'}],
-    ['pca', {'n_components': 20}]]
+    ['sfs', {'n_features': 24, 'method': 'fisher'}]]
 
 processing_strategy = []
 
@@ -50,9 +47,9 @@ processing_strategy = []
 # max_depth: int/None
 # adaboost => n_estimators: int, learning_rate: float
 
-classifier_1 = ['svm', {'C': 1, 'kernel': 'rbf'}]
-classifier_2 = ['nn', {'hidden_layer_sizes': (200, 200),
-                       'activation': 'identity', 'max_iter': 2000,
+classifier_1 = ['svm', {'C': 1, 'kernel': 'linear'}]
+classifier_2 = ['nn', {'hidden_layer_sizes': (100,),
+                       'activation': 'logistic', 'max_iter': 2000,
                        'random_state': 1}]
 classifier_3 = ['random_forest', {'n_estimators': 1200, 'criterion': 'entropy',
                                   'max_depth': None, 'random_state': 1}]
