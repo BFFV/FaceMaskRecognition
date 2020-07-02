@@ -1,6 +1,8 @@
 import numpy as np
 import cv2
-from pybalu.feature_extraction import lbp_features
+from skimage.feature import hog
+from pybalu.feature_extraction import lbp_features, haralick_features, \
+    gabor_features
 from utils import show_image, dir_files
 
 """""
@@ -24,6 +26,16 @@ def extract_features_img(image, selected):
     if 'lbp' in selected:  # Local Binary Patterns
         lbp = lbp_features(gray, hdiv=8, vdiv=8, mapping='nri_uniform')
         features = np.concatenate((features, lbp))
+    if 'hog' in selected:  # Histogram of Gradients
+        hog_features = hog(gray, orientations=16, pixels_per_cell=(64, 64),
+                           cells_per_block=(1, 1))
+        features = np.concatenate((features, hog_features))
+    if 'haralick' in selected:  # Haralick Textures
+        haralick = haralick_features(gray, distance=1)
+        features = np.concatenate((features, haralick))
+    if 'gabor' in selected:  # Gabor Features
+        gabor = gabor_features(gray, rotations=8, dilations=8)
+        features = np.concatenate((features, gabor))
     return features
 
 
