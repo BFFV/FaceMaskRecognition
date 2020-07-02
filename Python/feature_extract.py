@@ -20,18 +20,21 @@ def get_image(path, show=False):
 
 # Extracts features from an image
 def extract_features_img(image, selected):
-    img = get_image(image)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)[:128, 32:]  # Processed Image
+    img = get_image(image)[:100, 32:200]  # Processed Image
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Gray Scale
     features = np.array([])
     if 'lbp' in selected:  # Local Binary Patterns
-        lbp = lbp_features(gray, hdiv=8, vdiv=8, mapping='nri_uniform')
+        lbp_a = lbp_features(gray, hdiv=8, vdiv=8, mapping='nri_uniform')
+        lbp_b = lbp_features(img[:, :, 0],
+                             hdiv=8, vdiv=8, mapping='nri_uniform')
+        lbp = np.concatenate((lbp_a, lbp_b))
         features = np.concatenate((features, lbp))
     if 'hog' in selected:  # Histogram of Gradients
-        hog_features = hog(gray, orientations=16, pixels_per_cell=(64, 64),
-                           cells_per_block=(1, 1))
+        hog_features = hog(gray, orientations=16, pixels_per_cell=(32, 32),
+                           cells_per_block=(4, 4))
         features = np.concatenate((features, hog_features))
     if 'haralick' in selected:  # Haralick Textures
-        haralick = haralick_features(gray, distance=1)
+        haralick = haralick_features(gray, distance=3)
         features = np.concatenate((features, haralick))
     if 'gabor' in selected:  # Gabor Features
         gabor = gabor_features(gray, rotations=8, dilations=8)
