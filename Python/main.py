@@ -19,46 +19,65 @@ img_set = 'A'
 set_dict = {'A': 17, 'B': 41, 'C': 101, 'D': 167}
 
 # Features to extract (gabor, haralick, hog, lbp)
-selected_features = ['lbp']
+selected_features = ['hog', 'lbp']
 
 # Selection/Transformation steps (sfs, mutual_info, pca)
+
 # sfs => n_features: int, method: ('fisher', 'sp100')
-# mutual_info => n_features: int, n_neighbors: int
+
+# mutual_info => n_features: int
+
+# anova_f => n_features: int
+
 # pca => n_components: int, energy: float in [0,1]
 
-strategy_1 = [  # SFS + MI
-    ['pca', {'n_components': 2500}],
-    ['mutual_info', {'n_features': 800, 'n_neighbors': 3}]]
-strategy_2 = [  # SFS + PCA
-    ['pca', {'n_components': 2500}]]
-strategy_3 = [  # Best Combination
+strategy_1 = [  # PCA
+    ['pca', {'n_components': 35}]]
+strategy_2 = [  # SFS
     ['sfs', {'n_features': 24, 'method': 'fisher'}]]
+strategy_3 = [  # MI
+    ['mutual_info', {'n_features': 10000}]]
+strategy_4 = [  # ANOVA
+    ['anova_f', {'n_features': 10000}]]
 
-processing_strategy = []
+processing_strategy = strategy_4
 
 # Classifier to use (knn, dmin, lda, svm, nn, random_forest, adaboost)
+
 # knn => n_neighbors: int, weights: ('uniform', 'distance')
+
 # dmin => no params
+
 # lda => no params
+
 # svm => C: float, kernel: ('linear', 'poly', 'rbf', 'sigmoid')
+
+# linear_svm => C: float, loss: ('hinge', 'squared_hinge')
+
 # nn => hidden_layer_sizes: (size_1, size_2),
 # activation: ('identity', 'logistic', 'tanh', 'relu'), max_iter: int
+
 # random_forest => n_estimators: int, criterion: ('gini', 'entropy'),
 # max_depth: int/None
+
 # adaboost => n_estimators: int, learning_rate: float
 
-classifier_1 = ['svm', {'C': 1, 'kernel': 'linear'}]
-classifier_2 = ['nn', {'hidden_layer_sizes': (100,),
+# log_reg => C: float, max_iter: int
+
+classifier_1 = ['knn', {'n_neighbors': 3, 'weights': 'distance'}]
+classifier_2 = ['dmin', {}]
+classifier_3 = ['lda', {}]
+classifier_4 = ['svm', {'C': 1, 'kernel': 'linear'}]
+classifier_5 = ['linear_svm', {'C': 1, 'loss': 'hinge'}]
+classifier_6 = ['nn', {'hidden_layer_sizes': (100,),
                        'activation': 'logistic', 'max_iter': 2000,
                        'random_state': 1}]
-classifier_3 = ['random_forest', {'n_estimators': 1200, 'criterion': 'entropy',
+classifier_7 = ['random_forest', {'n_estimators': 1200, 'criterion': 'entropy',
                                   'max_depth': None, 'random_state': 1}]
-# classifier_4 = ['knn', {'n_neighbors': 3, 'weights': 'distance'}]
-# classifier_5 = ['dmin', {}]
-# classifier_6 = ['lda', {}]
-# classifier_7 = ['adaboost', {'n_estimators': 1000, 'learning_rate': 1}]
+classifier_8 = ['adaboost', {'n_estimators': 1000, 'learning_rate': 1}]
+classifier_9 = ['log_reg', {'C': 1, 'max_iter': 2000}]
 
-classifier = classifier_2
+classifier = classifier_5
 
 # Training Set
 print('Training...')
@@ -94,7 +113,7 @@ print(f'        normalized features: {X_train_norm.shape[1]} '
 print('Selecting/Transforming Features...')
 X_train_final = X_train_norm
 for index, step in enumerate(processing_strategy):
-    if step[0] in ['sfs', 'mutual_info']:  # Selection
+    if step[0] in ['sfs', 'mutual_info', 'anova_f']:  # Selection
         step[1]['n_features'] = \
             min(X_train_final.shape[1], step[1]['n_features'])
         output = select_features(X_train_final, d_train, step[0], step[1])
@@ -138,7 +157,7 @@ X_validate_norm = X_validate_clean * a + b
 print('Selecting/Transforming Features...')
 X_validate_final = X_validate_norm
 for index, step in enumerate(processing_strategy):
-    if step[0] in ['sfs', 'mutual_info']:  # Selection
+    if step[0] in ['sfs', 'mutual_info', 'anova_f']:  # Selection
         selected = step[2]
         X_validate_final = X_validate_final[:, selected]
     elif step[0] == 'pca':  # PCA
@@ -171,7 +190,7 @@ X_test_norm = X_test_clean * a + b
 print('Selecting/Transforming Features...')
 X_test_final = X_test_norm
 for index, step in enumerate(processing_strategy):
-    if step[0] in ['sfs', 'mutual_info']:  # Selection
+    if step[0] in ['sfs', 'mutual_info', 'anova_f']:  # Selection
         selected = step[2]
         X_test_final = X_test_final[:, selected]
     elif step[0] == 'pca':  # PCA

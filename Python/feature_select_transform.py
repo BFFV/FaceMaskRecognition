@@ -1,7 +1,7 @@
-import numpy as np
 from pybalu.feature_selection import sfs
 from pybalu.feature_transformation import pca
-from sklearn.feature_selection import mutual_info_classif
+from sklearn.feature_selection import SelectKBest, mutual_info_classif, \
+    f_classif
 
 """""
 This module contains functions for feature selection/transformation.
@@ -13,10 +13,13 @@ def select_features(train_data, classes, operation, kwargs):
     if operation == 'sfs':  # Sequential Forward Selection
         return sfs(train_data, classes, **kwargs)
     elif operation == 'mutual_info':  # Mutual Information
-        m_info = mutual_info_classif(
-            train_data, classes, n_neighbors=kwargs['n_neighbors'])
-        return np.argpartition(
-            m_info, -kwargs['n_features'])[-kwargs['n_features']:]
+        m_info = SelectKBest(mutual_info_classif, k=kwargs['n_features'])
+        m_info.fit(train_data, classes)
+        return m_info.get_support(indices=True)
+    elif operation == 'anova_f':  # ANOVA F-values
+        anova_f = SelectKBest(f_classif, k=kwargs['n_features'])
+        anova_f.fit(train_data, classes)
+        return anova_f.get_support(indices=True)
 
 
 # Transforms features

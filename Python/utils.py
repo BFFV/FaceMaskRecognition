@@ -50,7 +50,7 @@ def accuracy(ys, y, st):
     print(f'Accuracy: {acc * 100}%')
     print()
     nm = c.shape[0]
-    plt.figure(figsize=(7, 5))
+    plt.figure(figsize=(14, 10))
     heatmap(c, annot=True, fmt="d", cmap="YlGnBu")
     plt.xlim(0, nm)
     plt.ylim(nm, 0)
