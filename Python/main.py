@@ -15,11 +15,14 @@ validation_data = 'validation_data.npy'  # Validation Set Data
 validation_classes = 'validation_classes.npy'  # Validation Set Classes
 
 # Image Set
-img_set = 'A'
+img_set = 'B'
 set_dict = {'A': 17, 'B': 41, 'C': 101, 'D': 167}
 
-# Features to extract (gabor, haralick, hog, lbp)
-selected_features = ['hog', 'lbp']
+# Features to extract (gabor, haralick, hog, lbp, sift, zernike)
+features = {'A': ['lbp', 'hog'], 'B': ['lbp', 'hog'], 'C': ['lbp', 'hog'],
+            'D': ['lbp', 'hog']}
+
+selected_features = features[img_set]
 
 # Selection/Transformation steps (sfs, mutual_info, pca)
 
@@ -32,15 +35,20 @@ selected_features = ['hog', 'lbp']
 # pca => n_components: int, energy: float in [0,1]
 
 strategy_1 = [  # PCA
-    ['pca', {'n_components': 35}]]
+    ['pca', {'n_components': 5000}]]
 strategy_2 = [  # SFS
     ['sfs', {'n_features': 24, 'method': 'fisher'}]]
 strategy_3 = [  # MI
     ['mutual_info', {'n_features': 10000}]]
 strategy_4 = [  # ANOVA
-    ['anova_f', {'n_features': 10000}]]
+    ['anova_f', {'n_features': 9000}]]
 
-processing_strategy = strategy_4
+strategies = {'A': [['anova_f', {'n_features': 9000}]],
+              'B': [['anova_f', {'n_features': 5000}]],
+              'C': [],
+              'D': []}
+
+processing_strategy = strategies[img_set]
 
 # Classifier to use (knn, dmin, lda, svm, nn, random_forest, adaboost)
 
@@ -77,7 +85,12 @@ classifier_7 = ['random_forest', {'n_estimators': 1200, 'criterion': 'entropy',
 classifier_8 = ['adaboost', {'n_estimators': 1000, 'learning_rate': 1}]
 classifier_9 = ['log_reg', {'C': 1, 'max_iter': 2000}]
 
-classifier = classifier_5
+classifiers = {'A': ['linear_svm', {'C': 1, 'loss': 'hinge'}],
+               'B': ['linear_svm', {'C': 1, 'loss': 'hinge'}],
+               'C': ['linear_svm', {'C': 1, 'loss': 'hinge'}],
+               'D': ['linear_svm', {'C': 1, 'loss': 'hinge'}]}
+
+classifier = classifiers[img_set]
 
 # Training Set
 print('Training...')

@@ -1,8 +1,8 @@
 import os
 import fnmatch
+import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image
 from sklearn.metrics import confusion_matrix, accuracy_score
 from seaborn import heatmap
 
@@ -13,8 +13,8 @@ This module contains utilities for evaluation & visualization.
 
 # Displays an image
 def show_image(img):
-    pil_image = Image.fromarray(img)
-    pil_image.show()
+    cv2.imshow('img.png', img)
+    cv2.waitKey(0)
 
 
 # Obtains all images in path with a specific format
