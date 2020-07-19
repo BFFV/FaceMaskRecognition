@@ -18,9 +18,6 @@ def process_image(path, show=False):
     cut_img = img[:100, 35:220]
     # Gray Scale
     gray = cv2.cvtColor(cut_img, cv2.COLOR_BGR2GRAY)
-    # Blur the image
-    blur_img = cv2.GaussianBlur(cut_img, (1, 1), cv2.BORDER_DEFAULT)
-    blur_gray = cv2.GaussianBlur(gray, (1, 1), cv2.BORDER_DEFAULT)
     # Equalize the lighting
     # b, g, r = cv2.split(cut_img)
     # equalized_b = cv2.equalizeHist(b)
@@ -28,6 +25,9 @@ def process_image(path, show=False):
     # equalized_r = cv2.equalizeHist(r)
     # equalized_img = cv2.merge((equalized_b, equalized_g, equalized_r))
     # equalized_gray = cv2.equalizeHist(gray)
+    # Blur the image
+    blur_img = cv2.GaussianBlur(cut_img, (1, 1), 0)
+    blur_gray = cv2.GaussianBlur(gray, (1, 1), 0)
     if show:
         show_image(blur_img)
     return blur_img, blur_gray
@@ -39,8 +39,13 @@ def extract_features_img(image, selected):
     features = np.array([])
     if 'lbp' in selected:  # Local Binary Patterns
         lbp_gray = lbp_features(gray, hdiv=8, vdiv=8, mapping='nri_uniform')
-        lbp_rgb = lbp_features(img[:, :, 0],
-                               hdiv=8, vdiv=8, mapping='nri_uniform')
+        lbp_b = lbp_features(img[:, :, 0],
+                             hdiv=8, vdiv=8, mapping='nri_uniform')
+        lbp_g = lbp_features(img[:, :, 1],
+                             hdiv=8, vdiv=8, mapping='nri_uniform')
+        lbp_r = lbp_features(img[:, :, 2],
+                             hdiv=8, vdiv=8, mapping='nri_uniform')
+        lbp_rgb = (lbp_r + lbp_g + lbp_b) / 3
         lbp = np.concatenate((lbp_gray, lbp_rgb))
         features = np.concatenate((features, lbp))
     if 'hog' in selected:  # Histogram of Gradients

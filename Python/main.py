@@ -15,12 +15,12 @@ validation_data = 'validation_data.npy'  # Validation Set Data
 validation_classes = 'validation_classes.npy'  # Validation Set Classes
 
 # Image Set
-img_set = 'B'
+img_set = 'A'
 set_dict = {'A': 17, 'B': 41, 'C': 101, 'D': 167}
 
 # Features to extract (gabor, haralick, hog, lbp, sift, zernike)
-features = {'A': ['lbp', 'hog'], 'B': ['lbp', 'hog'], 'C': ['lbp', 'hog'],
-            'D': ['lbp', 'hog']}
+features = {'A': ['lbp', 'hog'], 'B': ['lbp', 'hog'],
+            'C': ['lbp', 'hog', 'sift'], 'D': ['lbp', 'hog', 'sift']}
 
 selected_features = features[img_set]
 
@@ -43,7 +43,7 @@ strategy_3 = [  # MI
 strategy_4 = [  # ANOVA
     ['anova_f', {'n_features': 9000}]]
 
-strategies = {'A': [['anova_f', {'n_features': 9000}]],
+strategies = {'A': [],
               'B': [['anova_f', {'n_features': 5000}]],
               'C': [],
               'D': []}
