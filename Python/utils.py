@@ -45,10 +45,10 @@ def accuracy(ys, y, st):
         ds = ys
     c = confusion_matrix(d, ds)
     acc = accuracy_score(d, ds)
-    print('Confusion Matrix:')
-    print(c)
-    print(f'Accuracy: {acc * 100}%')
-    print()
+    # print('Confusion Matrix:')
+    # print(c)
+    print(f'--> Accuracy: {acc * 100}%')
+    # print()
     nm = c.shape[0]
     plt.figure(figsize=(14, 10))
     heatmap(c, annot=True, fmt="d", cmap="YlGnBu")
