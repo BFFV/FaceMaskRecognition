@@ -1,8 +1,8 @@
 import os
 import fnmatch
+import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image
 from sklearn.metrics import confusion_matrix, accuracy_score
 from seaborn import heatmap
 
@@ -13,8 +13,8 @@ This module contains utilities for evaluation & visualization.
 
 # Displays an image
 def show_image(img):
-    pil_image = Image.fromarray(img)
-    pil_image.show()
+    cv2.imshow('img.png', img)
+    cv2.waitKey(0)
 
 
 # Obtains all images in path with a specific format
@@ -45,12 +45,12 @@ def accuracy(ys, y, st):
         ds = ys
     c = confusion_matrix(d, ds)
     acc = accuracy_score(d, ds)
-    print('Confusion Matrix:')
-    print(c)
-    print(f'Accuracy: {acc * 100}%')
-    print()
+    # print('Confusion Matrix:')
+    # print(c)
+    print(f'--> Accuracy: {acc * 100}%')
+    # print()
     nm = c.shape[0]
-    plt.figure(figsize=(7, 5))
+    plt.figure(figsize=(14, 10))
     heatmap(c, annot=True, fmt="d", cmap="YlGnBu")
     plt.xlim(0, nm)
     plt.ylim(nm, 0)

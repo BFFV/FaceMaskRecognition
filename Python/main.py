@@ -8,57 +8,89 @@ from utils import accuracy
 
 # Train or load from data file
 
-load = False
+load = True
 train_data = 'train_data.npy'  # Training Set Data
 train_classes = 'train_classes.npy'  # Training Set Classes
 validation_data = 'validation_data.npy'  # Validation Set Data
 validation_classes = 'validation_classes.npy'  # Validation Set Classes
 
 # Image Set
-img_set = 'A'
+img_set = 'B'
 set_dict = {'A': 17, 'B': 41, 'C': 101, 'D': 167}
 
-# Features to extract (gabor, haralick, hog, lbp)
-selected_features = ['lbp']
+# Features to extract (gabor, haralick, hog, lbp, sift, zernike)
+features = {'A': ['lbp', 'hog'], 'B': ['lbp', 'hog'],
+            'C': ['lbp', 'hog', 'sift'], 'D': ['lbp', 'hog', 'sift']}
+
+selected_features = features[img_set]
 
 # Selection/Transformation steps (sfs, mutual_info, pca)
+
 # sfs => n_features: int, method: ('fisher', 'sp100')
-# mutual_info => n_features: int, n_neighbors: int
+
+# mutual_info => n_features: int
+
+# anova_f => n_features: int
+
 # pca => n_components: int, energy: float in [0,1]
 
-strategy_1 = [  # SFS + MI
-    ['pca', {'n_components': 2500}],
-    ['mutual_info', {'n_features': 800, 'n_neighbors': 3}]]
-strategy_2 = [  # SFS + PCA
-    ['pca', {'n_components': 2500}]]
-strategy_3 = [  # Best Combination
+strategy_1 = [  # PCA
+    ['pca', {'n_components': 5000}]]
+strategy_2 = [  # SFS
     ['sfs', {'n_features': 24, 'method': 'fisher'}]]
+strategy_3 = [  # MI
+    ['mutual_info', {'n_features': 10000}]]
+strategy_4 = [  # ANOVA
+    ['anova_f', {'n_features': 9000}]]
 
-processing_strategy = []
+strategies = {'A': [],
+              'B': [['anova_f', {'n_features': 5000}]],
+              'C': [],
+              'D': []}
+
+processing_strategy = strategies[img_set]
 
 # Classifier to use (knn, dmin, lda, svm, nn, random_forest, adaboost)
+
 # knn => n_neighbors: int, weights: ('uniform', 'distance')
+
 # dmin => no params
+
 # lda => no params
+
 # svm => C: float, kernel: ('linear', 'poly', 'rbf', 'sigmoid')
+
+# linear_svm => C: float, loss: ('hinge', 'squared_hinge')
+
 # nn => hidden_layer_sizes: (size_1, size_2),
 # activation: ('identity', 'logistic', 'tanh', 'relu'), max_iter: int
+
 # random_forest => n_estimators: int, criterion: ('gini', 'entropy'),
 # max_depth: int/None
+
 # adaboost => n_estimators: int, learning_rate: float
 
-classifier_1 = ['svm', {'C': 1, 'kernel': 'linear'}]
-classifier_2 = ['nn', {'hidden_layer_sizes': (100,),
+# log_reg => C: float, max_iter: int
+
+classifier_1 = ['knn', {'n_neighbors': 3, 'weights': 'distance'}]
+classifier_2 = ['dmin', {}]
+classifier_3 = ['lda', {}]
+classifier_4 = ['svm', {'C': 1, 'kernel': 'linear'}]
+classifier_5 = ['linear_svm', {'C': 1, 'loss': 'hinge'}]
+classifier_6 = ['nn', {'hidden_layer_sizes': (100,),
                        'activation': 'logistic', 'max_iter': 2000,
                        'random_state': 1}]
-classifier_3 = ['random_forest', {'n_estimators': 1200, 'criterion': 'entropy',
+classifier_7 = ['random_forest', {'n_estimators': 1200, 'criterion': 'entropy',
                                   'max_depth': None, 'random_state': 1}]
-# classifier_4 = ['knn', {'n_neighbors': 3, 'weights': 'distance'}]
-# classifier_5 = ['dmin', {}]
-# classifier_6 = ['lda', {}]
-# classifier_7 = ['adaboost', {'n_estimators': 1000, 'learning_rate': 1}]
+classifier_8 = ['adaboost', {'n_estimators': 1000, 'learning_rate': 1}]
+classifier_9 = ['log_reg', {'C': 1, 'max_iter': 2000}]
 
-classifier = classifier_2
+classifiers = {'A': ['linear_svm', {'C': 1, 'loss': 'hinge'}],
+               'B': ['linear_svm', {'C': 1, 'loss': 'hinge'}],
+               'C': ['linear_svm', {'C': 1, 'loss': 'hinge'}],
+               'D': ['linear_svm', {'C': 1, 'loss': 'hinge'}]}
+
+classifier = classifiers[img_set]
 
 # Training Set
 print('Training...')
@@ -80,21 +112,21 @@ else:  # Extract features from all images & save the data
             d_train = np.concatenate((d_train, current_classes), axis=0)
     np.save('train_data.npy', X_train)
     np.save('train_classes.npy', d_train)
-print(f'Original Extracted Features: {X_train.shape[1]} ({X_train.shape[0]} '
-      f'samples)')
-print('Cleaning...')
-s_clean = clean(X_train, show=True)
+print(f'--> Extracted Features: {X_train.shape[1]} ({X_train.shape[0]} '
+      f'Samples)')
+# print('Cleaning...')
+s_clean = clean(X_train)
 X_train_clean = X_train[:, s_clean]
-print(f'           cleaned features: {X_train_clean.shape[1]} '
-      f'({X_train_clean.shape[0]} samples)')
-print('Normalizing...')
+# print(f'           cleaned features: {X_train_clean.shape[1]} '
+#      f'({X_train_clean.shape[0]} samples)')
+# print('Normalizing...')
 X_train_norm, a, b = normalize(X_train_clean)
-print(f'        normalized features: {X_train_norm.shape[1]} '
-      f'({X_train_norm.shape[0]} samples)')
-print('Selecting/Transforming Features...')
+# print(f'        normalized features: {X_train_norm.shape[1]} '
+#      f'({X_train_norm.shape[0]} samples)')
+# print('Selecting/Transforming Features...')
 X_train_final = X_train_norm
 for index, step in enumerate(processing_strategy):
-    if step[0] in ['sfs', 'mutual_info']:  # Selection
+    if step[0] in ['sfs', 'mutual_info', 'anova_f']:  # Selection
         step[1]['n_features'] = \
             min(X_train_final.shape[1], step[1]['n_features'])
         output = select_features(X_train_final, d_train, step[0], step[1])
@@ -106,10 +138,11 @@ for index, step in enumerate(processing_strategy):
         output = transform_features(X_train_final, step[0], step[1])
         X_train_final = output[0]
         processing_strategy[index].append(output[1])
-print(f'          selected/transformed features: {X_train_final.shape[1]} '
-      f'({X_train_final.shape[0]} samples)')
+print(f'--> Selected Features: {X_train_final.shape[1]} '
+      f'({X_train_final.shape[0]} Samples)')
 
 # Validation Set
+print()
 print('Validating...')
 if load:  # Load extracted features from data file
     X_validate = np.load(validation_data)
@@ -129,26 +162,27 @@ else:  # Extract features from all images & save the data
             d_validate = np.concatenate((d_validate, current_classes), axis=0)
     np.save('validation_data.npy', X_validate)
     np.save('validation_classes.npy', d_validate)
-print(f'Original Extracted Features: {X_validate.shape[1]} '
-      f'({X_validate.shape[0]} samples)')
-print('Cleaning...')
+# print(f'Original Extracted Features: {X_validate.shape[1]} '
+#      f'({X_validate.shape[0]} samples)')
+# print('Cleaning...')
 X_validate_clean = X_validate[:, s_clean]
-print('Normalizing...')
+# print('Normalizing...')
 X_validate_norm = X_validate_clean * a + b
-print('Selecting/Transforming Features...')
+# print('Selecting/Transforming Features...')
 X_validate_final = X_validate_norm
 for index, step in enumerate(processing_strategy):
-    if step[0] in ['sfs', 'mutual_info']:  # Selection
+    if step[0] in ['sfs', 'mutual_info', 'anova_f']:  # Selection
         selected = step[2]
         X_validate_final = X_validate_final[:, selected]
     elif step[0] == 'pca':  # PCA
         params = step[2]
         X_validate_final = np.matmul(
             X_validate_final - params['Xm'], params['A'])
-print(f'    clean+norm+selected/transformed features:'
-      f' {X_validate_final.shape[1]} ({X_validate_final.shape[0]} samples)')
+# print(f'    clean+norm+selected/transformed features:'
+#      f' {X_validate_final.shape[1]} ({X_validate_final.shape[0]} samples)')
 
 # Testing Set
+print()
 print('Testing...')
 X_test = np.array([])
 d_test = np.array([])
@@ -162,31 +196,33 @@ for person in range(1, set_dict[img_set]):
     else:
         X_test = np.concatenate((X_test, current_features), axis=0)
         d_test = np.concatenate((d_test, current_classes), axis=0)
-print(f'Original Extracted Features: {X_test.shape[1]} ({X_test.shape[0]} '
-      f'samples)')
-print('Cleaning...')
+# print(f'Original Extracted Features: {X_test.shape[1]} ({X_test.shape[0]} '
+#      f'samples)')
+# print('Cleaning...')
 X_test_clean = X_test[:, s_clean]
-print('Normalizing...')
+# print('Normalizing...')
 X_test_norm = X_test_clean * a + b
-print('Selecting/Transforming Features...')
+# print('Selecting/Transforming Features...')
 X_test_final = X_test_norm
 for index, step in enumerate(processing_strategy):
-    if step[0] in ['sfs', 'mutual_info']:  # Selection
+    if step[0] in ['sfs', 'mutual_info', 'anova_f']:  # Selection
         selected = step[2]
         X_test_final = X_test_final[:, selected]
     elif step[0] == 'pca':  # PCA
         params = step[2]
         X_test_final = np.matmul(
             X_test_final - params['Xm'], params['A'])
-print(f'    clean+norm+selected/transformed features:'
-      f' {X_test_final.shape[1]} ({X_test_final.shape[0]} samples)')
+# print(f'    clean+norm+selected/transformed features:'
+#      f' {X_test_final.shape[1]} ({X_test_final.shape[0]} samples)')
 
 # Classification
-print('Classifying...\n')
+print()
+print(f'Classifying with {classifier[0]}...\n')
 validation_results = classify(
     X_train_final, X_validate_final, d_train, classifier[0], classifier[1])
 accuracy(validation_results, d_validate, 'Validation')
 testing_results = classify(
     X_train_final, X_test_final, d_train, classifier[0], classifier[1])
-accuracy(testing_results, d_test, 'Person Classification')
+accuracy(testing_results, d_test, 'Testing')
+print()
 print('Finished!')

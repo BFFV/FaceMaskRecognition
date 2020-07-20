@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from skimage.feature import hog
+from mahotas.features import zernike_moments
 from pybalu.feature_extraction import lbp_features, haralick_features, \
     gabor_features
 from utils import show_image, dir_files
@@ -10,27 +11,45 @@ This module contains functions for feature extraction.
 """""
 
 
-# Reads an image
-def get_image(path, show=False):
+# Read and process an image
+def process_image(path, show=False):
     img = cv2.imread(path)
+    # Cut the background from the image
+    cut_img = img[:100, 35:220]
+    # Gray Scale
+    gray = cv2.cvtColor(cut_img, cv2.COLOR_BGR2GRAY)
+    # Equalize the lighting
+    # b, g, r = cv2.split(cut_img)
+    # equalized_b = cv2.equalizeHist(b)
+    # equalized_g = cv2.equalizeHist(g)
+    # equalized_r = cv2.equalizeHist(r)
+    # equalized_img = cv2.merge((equalized_b, equalized_g, equalized_r))
+    # equalized_gray = cv2.equalizeHist(gray)
+    # Blur the image
+    blur_img = cv2.GaussianBlur(cut_img, (1, 1), 0)
+    blur_gray = cv2.GaussianBlur(gray, (1, 1), 0)
     if show:
-        show_image(img)
-    return img
+        show_image(blur_img)
+    return blur_img, blur_gray
 
 
 # Extracts features from an image
 def extract_features_img(image, selected):
-    img = get_image(image)[:100, 32:200]  # Processed Image
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Gray Scale
+    img, gray = process_image(image)  # Processed Image
     features = np.array([])
     if 'lbp' in selected:  # Local Binary Patterns
-        lbp_a = lbp_features(gray, hdiv=8, vdiv=8, mapping='nri_uniform')
+        lbp_gray = lbp_features(gray, hdiv=8, vdiv=8, mapping='nri_uniform')
         lbp_b = lbp_features(img[:, :, 0],
                              hdiv=8, vdiv=8, mapping='nri_uniform')
-        lbp = np.concatenate((lbp_a, lbp_b))
+        lbp_g = lbp_features(img[:, :, 1],
+                             hdiv=8, vdiv=8, mapping='nri_uniform')
+        lbp_r = lbp_features(img[:, :, 2],
+                             hdiv=8, vdiv=8, mapping='nri_uniform')
+        lbp_rgb = (lbp_r + lbp_g + lbp_b) / 3
+        lbp = np.concatenate((lbp_gray, lbp_rgb))
         features = np.concatenate((features, lbp))
     if 'hog' in selected:  # Histogram of Gradients
-        hog_features = hog(gray, orientations=16, pixels_per_cell=(32, 32),
+        hog_features = hog(gray, orientations=16, pixels_per_cell=(16, 16),
                            cells_per_block=(4, 4))
         features = np.concatenate((features, hog_features))
     if 'haralick' in selected:  # Haralick Textures
@@ -39,6 +58,20 @@ def extract_features_img(image, selected):
     if 'gabor' in selected:  # Gabor Features
         gabor = gabor_features(gray, rotations=8, dilations=8)
         features = np.concatenate((features, gabor))
+    if 'zernike' in selected:  # Zernike Moments
+        zer_moments = zernike_moments(gray, 80)
+        features = np.concatenate((features, zer_moments))
+    if 'sift' in selected:  # SIFT Descriptors
+        sift = cv2.xfeatures2d.SIFT_create()
+        kp, descriptors = sift.detectAndCompute(gray, None)
+        if descriptors is None:
+            descriptors = np.full(1280, 50, dtype=int)
+        elif descriptors.shape[0] < 10:
+            default = np.full(128 * (10 - descriptors.shape[0]), 50, dtype=int)
+            descriptors = np.concatenate((descriptors.flatten(), default))
+        else:
+            descriptors = descriptors[:10].flatten()
+        features = np.concatenate((features, descriptors))
     return features
 
 
