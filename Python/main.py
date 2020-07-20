@@ -218,11 +218,15 @@ for index, step in enumerate(processing_strategy):
 # Classification
 print()
 print(f'Classifying with {classifier[0]}...\n')
+print(f'===============================================')
+print(f'Extracted Features: {selected_features}\nSelection/Transformation: '
+      f'{[x[0] for x in strategies[img_set]]}\nClassifier: {classifier[0]}\n')
 validation_results = classify(
     X_train_final, X_validate_final, d_train, classifier[0], classifier[1])
 accuracy(validation_results, d_validate, 'Validation')
 testing_results = classify(
     X_train_final, X_test_final, d_train, classifier[0], classifier[1])
 accuracy(testing_results, d_test, 'Testing')
+print(f'===============================================')
 print()
 print('Finished!')
